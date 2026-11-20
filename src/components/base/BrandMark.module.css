@@ -1,0 +1,86 @@
+.mark {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  width: var(--mark-size, 28px);
+  height: var(--mark-size, 28px);
+
+  svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+}
+
+/* 欢迎页的大标记带一层很淡的蓝色光晕，代替原来的问候语占据视觉中心。 */
+.animated::before {
+  content: '';
+  position: absolute;
+  inset: -42%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(77, 107, 254, 0.16) 0%, rgba(77, 107, 254, 0) 68%);
+  pointer-events: none;
+}
+
+.ring {
+  transform-origin: 24px 24px;
+}
+
+.spark {
+  transform-origin: 24px 24px;
+}
+
+.core {
+  transform-origin: 24px 24px;
+}
+
+.animated .ring {
+  animation: brand-orbit 34s linear infinite;
+}
+
+.animated .spark {
+  animation: brand-breathe 6s ease-in-out infinite;
+}
+
+.animated .core {
+  animation: brand-core 6s ease-in-out infinite;
+}
+
+@keyframes brand-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes brand-breathe {
+  0%,
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.86;
+    transform: scale(0.965);
+  }
+}
+
+@keyframes brand-core {
+  0%,
+  100% {
+    opacity: 0.95;
+  }
+  50% {
+    opacity: 0.6;
+  }
+}
+
+/* 系统偏好减少动态时保留完整构图，只停掉运动。 */
+@media (prefers-reduced-motion: reduce) {
+  .animated .ring,
+  .animated .spark,
+  .animated .core {
+    animation: none;
+  }
+}

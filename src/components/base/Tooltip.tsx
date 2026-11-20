@@ -49,6 +49,14 @@ export const Tooltip = ({
         className={styles.trigger}
         onMouseEnter={() => schedule(true, ENTER_DELAY)}
         onMouseLeave={() => schedule(false, 0)}
+        // 键盘聚焦时立即显示：图标按钮没有可见文字，读屏之外也要让键盘用户看得到名称。
+        // 鼠标点击也会触发 focus，用 :focus-visible 过滤掉，避免点完按钮后 tooltip 一直挂着。
+        onFocus={(event) => {
+          if ((event.target as HTMLElement).matches?.(':focus-visible')) {
+            schedule(true, 0)
+          }
+        }}
+        onBlur={() => schedule(false, 0)}
       >
         {children}
       </span>

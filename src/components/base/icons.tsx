@@ -523,3 +523,110 @@ export const IconToastError16 = () => (
     />
   </svg>
 )
+
+/** 历史分组：今天。太阳是最短路径的“当下”符号，悬停时再由 tooltip 给出完整日期文案。 */
+export const IconSunOutline14 = () => (
+  <svg width={14} height={14} viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="7" cy="7" r="2.5" fill="currentColor" />
+    <g stroke="currentColor" strokeWidth="1.2" strokeLinecap="round">
+      <path d="M7 0.9V2.4M7 11.6V13.1M0.9 7H2.4M11.6 7H13.1M2.7 2.7L3.7 3.7M10.3 10.3L11.3 11.3M11.3 2.7L10.3 3.7M3.7 10.3L2.7 11.3" />
+    </g>
+  </svg>
+)
+
+/** 历史分组：昨天。用月相代替“昨天”两个字，和太阳组成时间对。 */
+export const IconMoonOutline14 = () => (
+  <svg width={14} height={14} viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M11.42 8.71A5.1 5.1 0 0 1 5.3 2.58a5.1 5.1 0 1 0 6.12 6.13Z" fill="currentColor" />
+  </svg>
+)
+
+/** 历史分组：7 天内。日历头 + 一星期圆点，比“7 天内”更快被扫读。 */
+export const IconWeekOutline14 = () => (
+  <svg width={14} height={14} viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect
+      x="1.4"
+      y="2.2"
+      width="11.2"
+      height="10.4"
+      rx="2"
+      stroke="currentColor"
+      strokeWidth="1.2"
+    />
+    <path d="M1.4 5.1h11.2" stroke="currentColor" strokeWidth="1.2" />
+    <path
+      d="M4.3 0.9v2.2M9.7 0.9v2.2"
+      stroke="currentColor"
+      strokeWidth="1.2"
+      strokeLinecap="round"
+    />
+    <g fill="currentColor">
+      <circle cx="4" cy="7.3" r="0.65" />
+      <circle cx="6" cy="7.3" r="0.65" />
+      <circle cx="8" cy="7.3" r="0.65" />
+      <circle cx="10" cy="7.3" r="0.65" />
+      <circle cx="4" cy="9.3" r="0.65" />
+      <circle cx="6" cy="9.3" r="0.65" />
+      <circle cx="8" cy="9.3" r="0.65" />
+      <circle cx="10" cy="9.3" r="0.65" />
+      <circle cx="4" cy="11.1" r="0.65" />
+      <circle cx="6" cy="11.1" r="0.65" />
+      <circle cx="8" cy="11.1" r="0.65" />
+    </g>
+  </svg>
+)
+
+/** 信息提示：内容说明从常驻文字改为一个点，悬停/读屏时才展开。 */
+export const IconInfoOutline14 = () => (
+  <svg width={14} height={14} viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="7" cy="7" r="5.6" stroke="currentColor" strokeWidth="1.2" />
+    <path d="M7 6.1v3.6" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    <circle cx="7" cy="4.2" r="0.85" fill="currentColor" />
+  </svg>
+)
+
+/** API Key 字段的图形标签：首次使用时，输入框自身的 placeholder 已足够说明要填什么。 */
+export const IconKeyOutline16 = () => (
+  <svg width={16} height={16} viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="5.2" cy="10.8" r="3.1" stroke="currentColor" strokeWidth="1.3" />
+    <path
+      d="M7.4 8.6 13.4 2.6M11 5l1.9 1.9M9.2 6.8l1.9 1.9"
+      stroke="currentColor"
+      strokeWidth="1.3"
+      strokeLinecap="round"
+    />
+  </svg>
+)
+
+/** 历史分组：30 天内。时钟表示“最近”，与更早的归档盒区分开。 */
+export const IconHistoryOutline14 = () => (
+  <svg width={14} height={14} viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="7" cy="7" r="5.6" stroke="currentColor" strokeWidth="1.2" />
+    <path
+      d="M7 3.9V7l2.1 1.35"
+      stroke="currentColor"
+      strokeWidth="1.2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+)
+
+/** 历史分组：更早的月份。归档盒提示这些对话已不在“近期”里。 */
+export const IconArchiveOutline14 = () => (
+  <svg width={14} height={14} viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path
+      d="M1.7 5h10.6v6.2a1.3 1.3 0 0 1-1.3 1.3H3a1.3 1.3 0 0 1-1.3-1.3V5Z"
+      stroke="currentColor"
+      strokeWidth="1.2"
+      strokeLinejoin="round"
+    />
+    <path
+      d="M1 2.1a.9.9 0 0 1 .9-.9h10.2a.9.9 0 0 1 .9.9v2.2H1V2.1Z"
+      stroke="currentColor"
+      strokeWidth="1.2"
+      strokeLinejoin="round"
+    />
+    <path d="M5.5 7.6h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" />
+  </svg>
+)

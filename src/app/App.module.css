@@ -52,6 +52,22 @@
   text-align: center;
 }
 
+.loadingMark {
+  opacity: 0.9;
+}
+
+/* 加载提示只留给读屏，视觉上由图形承担。 */
+.srOnly {
+  position: absolute;
+  overflow: hidden;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  border: 0;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
 @media not all and (min-width: 768px) {
   .frame {
     position: fixed;

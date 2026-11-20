@@ -47,16 +47,9 @@
     var(--dsw-alias-bg-base) 30%,
     var(--dsw-alias-bg-base) 100%
   );
-}
 
-.caveat {
-  width: 100%;
-  padding: 6px 0;
-  font-size: 11px;
-  line-height: 16px;
-  text-align: center;
-  color: var(--dsw-alias-label-tertiary);
-  user-select: none;
+  /* 去掉底部免责文字后，输入框自己收住页面，留一点呼吸空间即可。 */
+  padding-bottom: 10px;
 }
 
 @media not all and (min-width: 768px) {

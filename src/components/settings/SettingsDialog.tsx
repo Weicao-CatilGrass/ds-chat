@@ -5,8 +5,10 @@ import {
   IconDataOutline16,
   IconDownloadOutline16,
   IconFollowsystemOutline16,
+  IconInfoOutline14,
   IconLightOutline16,
   IconSettingsOutline16,
+  IconTrashOutline16,
   IconUploadOutline14,
 } from '../base/icons.js'
 import {
@@ -28,9 +30,12 @@ import {
   type ThemePreference,
 } from '../../services/settings.js'
 import { useTranslate, type TranslationKey, type TranslationMessage } from '../../i18n/index.js'
+import { BrandMark } from '../base/BrandMark.js'
 import { Button } from '../base/Button.js'
+import { IconButton } from '../base/IconButton.js'
 import { Modal } from '../base/Modal.js'
 import { Select } from '../base/Select.js'
+import { Tooltip } from '../base/Tooltip.js'
 import { showToast } from '../base/toastState.js'
 import { ApiKeyConfirm, ApiKeyField, useApiKeyEditor } from './ApiKeyField.js'
 import { closeSettings, useSettingsDialog, type SettingsSection } from './settingsDialogState.js'
@@ -68,7 +73,8 @@ const SettingsContent = () => {
   return (
     <>
       <Modal
-        title={t('settings')}
+        title={<BrandMark size={22} className={styles.dialogMark} />}
+        label={t('settings')}
         closable
         className={styles.dialog}
         mainClassName={styles.dialogMain}
@@ -78,19 +84,21 @@ const SettingsContent = () => {
           }
         }}
       >
+        {/* 分组导航只保留图标，完整分组名放进 tooltip；两项的分工由齿轮/数据库图形直接表达。 */}
         <div role="tablist" className={styles.navigation}>
           {sections.map((item) => (
-            <button
-              key={item.value}
-              type="button"
-              role="tab"
-              aria-selected={section === item.value}
-              className={clsx(styles.navItem, section === item.value && styles.navItemActive)}
-              onClick={() => setSection(item.value)}
-            >
-              {item.icon}
-              {t(item.label)}
-            </button>
+            <Tooltip key={item.value} content={t(item.label)} placement="bottom">
+              <button
+                type="button"
+                role="tab"
+                aria-label={t(item.label)}
+                aria-selected={section === item.value}
+                className={clsx(styles.navItem, section === item.value && styles.navItemActive)}
+                onClick={() => setSection(item.value)}
+              >
+                {item.icon}
+              </button>
+            </Tooltip>
           ))}
         </div>
         <div role="tabpanel" className={styles.content}>
@@ -110,15 +118,14 @@ const SettingsContent = () => {
                 label={t('deleteAllSessions')}
                 status={null}
                 action={
-                  <Button
-                    variant="dangerOutlined"
+                  <IconButton
                     size="m"
-                    className={styles.cellButton}
+                    className={styles.dangerIcon}
+                    icon={<IconTrashOutline16 />}
+                    tooltip={t('deleteAllSessions')}
                     disabled={historyBusy}
                     onClick={historyDelete.open}
-                  >
-                    {t('delete')}
-                  </Button>
+                  />
                 }
               />
               {isMobile ? <ApiKeyConfirm editor={apiKeyEditor} /> : null}
@@ -361,8 +368,8 @@ const themeOptions: { value: ThemePreference; label: TranslationKey; icon: React
 ]
 
 /**
- * 主题项：标题下方浅色 / 深色 / 跟随系统三个选块。
- * 与下方语言选项连续排列。
+ * 主题项：浅色 / 深色 / 跟随系统三枚图标块。
+ * 三个图标词义明确，不再写“浅色/深色/跟随系统”；选中态由底色与描边表达。
  */
 const ThemeSetting = () => {
   const t = useTranslate()
@@ -370,23 +377,23 @@ const ThemeSetting = () => {
   const label = t('avatarMenuSettingsDialogThemeItemLabel')
   return (
     <div className={styles.theme}>
-      {label}
       <div role="radiogroup" aria-label={label} className={styles.themeOptions}>
         {themeOptions.map((option) => (
-          <button
-            key={option.value}
-            type="button"
-            role="radio"
-            aria-checked={themePreference === option.value}
-            className={clsx(
-              styles.themeOption,
-              themePreference === option.value && styles.themeOptionSelected
-            )}
-            onClick={() => setThemePreference(option.value)}
-          >
-            {option.icon}
-            {t(option.label)}
-          </button>
+          <Tooltip key={option.value} content={t(option.label)} placement="bottom">
+            <button
+              type="button"
+              role="radio"
+              aria-label={t(option.label)}
+              aria-checked={themePreference === option.value}
+              className={clsx(
+                styles.themeOption,
+                themePreference === option.value && styles.themeOptionSelected
+              )}
+              onClick={() => setThemePreference(option.value)}
+            >
+              {option.icon}
+            </button>
+          </Tooltip>
         ))}
       </div>
     </div>
@@ -405,15 +412,19 @@ const errorStatus = (key: TranslationKey, error: unknown): Status => ({
   error: true,
 })
 
+/**
+ * 设置行：左侧只留一个短标签，解释性长文案折叠成一个信息点。
+ * 长解释常驻会把设置页变成说明书，这里改成“需要时再展开”的 tooltip。
+ */
 const SettingCell = ({
   label,
-  description,
+  hint,
   status,
   action,
   className,
 }: {
   label: string
-  description?: string
+  hint?: string
   status: Status
   action: ReactNode
   className?: string
@@ -422,12 +433,19 @@ const SettingCell = ({
   return (
     <div className={clsx(styles.cell, styles.row, className)}>
       <div className={styles.text}>
-        <div className={styles.label}>{label}</div>
-        {status || description ? (
-          <div className={clsx(styles.description, status?.error && styles.error)}>
-            {status
-              ? t(status.key, status.reason ? { message: t(status.reason) } : status.params)
-              : description}
+        <div className={styles.labelRow}>
+          <div className={styles.label}>{label}</div>
+          {hint ? (
+            <Tooltip content={hint} placement="bottom">
+              <span className={styles.hint} role="note" tabIndex={0} aria-label={hint}>
+                <IconInfoOutline14 />
+              </span>
+            </Tooltip>
+          ) : null}
+        </div>
+        {status ? (
+          <div className={clsx(styles.description, status.error && styles.error)}>
+            {t(status.key, status.reason ? { message: t(status.reason) } : status.params)}
           </div>
         ) : null}
       </div>
@@ -479,20 +497,18 @@ const ImportHistory = ({
   return (
     <SettingCell
       label={t('historyImport')}
-      description={t('historyImportDescription')}
+      hint={t('historyImportDescription')}
       status={historyImport.status}
       action={
         <>
-          <Button
-            variant="outlined"
+          <IconButton
             size="m"
-            className={clsx(styles.cellButton, styles.uploadButton)}
+            tone="primary"
+            icon={<IconUploadOutline14 />}
+            tooltip={t('upload')}
             disabled={disabled}
             onClick={() => inputRef.current?.click()}
-          >
-            <IconUploadOutline14 />
-            {t('upload')}
-          </Button>
+          />
           <input
             ref={inputRef}
             type="file"
@@ -540,19 +556,17 @@ const ExportHistory = ({ disabled }: { disabled: boolean }) => {
   return (
     <SettingCell
       label={t('exportAllLabel')}
-      description={t('historyExportDescription')}
+      hint={t('historyExportDescription')}
       status={status}
       action={
-        <Button
-          variant="outlined"
+        <IconButton
           size="m"
-          className={styles.cellButton}
+          tone="primary"
+          icon={<IconDownloadOutline16 />}
+          tooltip={t('exportAllDownload')}
           disabled={disabled || busy || empty}
           onClick={() => void onExport()}
-        >
-          <IconDownloadOutline16 />
-          {t('exportAllDownload')}
-        </Button>
+        />
       }
     />
   )

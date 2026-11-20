@@ -24,20 +24,19 @@ export const SessionView = ({
     <div className={styles.view}>
       {isMobile ? (
         <MobileHeader title={title} />
-      ) : (
+      ) : siderCollapsed ? (
+        // 侧边栏展开时，当前会话已经在列表里高亮，桌面上不再重复标题文字。
+        // 收起侧边栏后失去这个视觉锚点，才把标题放回顶部。
         <div className={styles.header}>
-          <div className={clsx(styles.title, siderCollapsed && styles.withCollapsedSider)}>
-            {title}
-          </div>
+          <div className={clsx(styles.title, styles.withCollapsedSider)}>{title}</div>
         </div>
-      )}
+      ) : null}
       <MessageList
         session={session}
         streaming={streaming}
         footer={
           <div className={styles.inputContainer}>
             <ChatInput sessionId={session.id} />
-            <div className={styles.caveat}>{t('contentCaveat')}</div>
           </div>
         }
       />

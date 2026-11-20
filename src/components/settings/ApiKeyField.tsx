@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { IconEditOutline16 } from '../base/icons.js'
+import { IconCheckOutline16, IconEditOutline16, IconKeyOutline16 } from '../base/icons.js'
 import { useSettings } from '../../services/settings.js'
 import { useIsMobile } from '../../app/viewport.js'
 import { IconButton } from '../base/IconButton.js'
@@ -17,7 +17,10 @@ export const useApiKeyEditor = () => {
 
 type ApiKeyEditor = ReturnType<typeof useApiKeyEditor>
 
-/** API Key：保存后只显示掩码，点编辑按钮才能重新输入 */
+/**
+ * API Key：字段名不再用整句标题说明，左侧的钥匙图形 + placeholder 已经足够。
+ * 确认动作是一枚对勾；验证中换成旋转环，避免出现「正在验证...」这样的状态文字。
+ */
 export const ApiKeyField = ({ editor }: { editor: ApiKeyEditor }) => {
   const t = useTranslate()
   const isMobile = useIsMobile()
@@ -26,9 +29,11 @@ export const ApiKeyField = ({ editor }: { editor: ApiKeyEditor }) => {
   return (
     <div className={styles.cell}>
       <div className={styles.apiKey}>
-        <div className={styles.label}>{t('apiKeyStart')}</div>
         {apiKey && !editing ? (
           <div className={styles.apiKeySaved}>
+            <span className={styles.apiKeyIcon} aria-hidden>
+              <IconKeyOutline16 />
+            </span>
             <span className={styles.apiKeyMask}>{'*'.repeat(apiKey.length)}</span>
             <IconButton
               tone="primary"
@@ -39,6 +44,9 @@ export const ApiKeyField = ({ editor }: { editor: ApiKeyEditor }) => {
           </div>
         ) : (
           <div className={styles.apiKeyInput}>
+            <span className={styles.apiKeyIcon} aria-hidden>
+              <IconKeyOutline16 />
+            </span>
             <input
               type="password"
               placeholder={t('apiKeyPlaceholder')}
@@ -65,13 +73,18 @@ export const ApiKeyField = ({ editor }: { editor: ApiKeyEditor }) => {
                 <span className={styles.divider} />
                 <button
                   type="button"
-                  className={styles.confirm}
+                  className={styles.confirmIcon}
+                  aria-label={form.verifying ? t('apiKeyVerifying') : t('confirm')}
                   disabled={form.verifying}
                   // 保持输入框焦点
                   onMouseDown={(event) => event.preventDefault()}
                   onClick={() => void form.submit()}
                 >
-                  {form.verifying ? t('apiKeyVerifying') : t('confirm')}
+                  {form.verifying ? (
+                    <span className={styles.spinner} aria-hidden />
+                  ) : (
+                    <IconCheckOutline16 />
+                  )}
                 </button>
               </>
             ) : null}
@@ -83,18 +96,19 @@ export const ApiKeyField = ({ editor }: { editor: ApiKeyEditor }) => {
   )
 }
 
-/** 移动端：输入 API Key 时在选项下方显示整行「确定」 */
+/** 移动端：输入 API Key 时在选项下方显示圆形对勾按钮 */
 export const ApiKeyConfirm = ({ editor: { showInput, form } }: { editor: ApiKeyEditor }) => {
   const t = useTranslate()
   return showInput && form.value.trim() ? (
     <button
       type="button"
       className={styles.mobileConfirm}
+      aria-label={form.verifying ? t('apiKeyVerifying') : t('confirm')}
       disabled={form.verifying}
       onMouseDown={(event) => event.preventDefault()}
       onClick={() => void form.submit()}
     >
-      {form.verifying ? t('apiKeyVerifying') : t('confirm')}
+      {form.verifying ? <span className={styles.spinner} aria-hidden /> : <IconCheckOutline16 />}
     </button>
   ) : null
 }

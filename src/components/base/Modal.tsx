@@ -12,6 +12,7 @@ const openModals: object[] = []
 /** 遮罩 + 居中卡片，Esc / 点遮罩关闭 */
 export const Modal = ({
   title,
+  label,
   children,
   footer,
   closable = false,
@@ -20,6 +21,8 @@ export const Modal = ({
   onClose,
 }: {
   title: ReactNode
+  /** 标题为纯图形时用它提供无障碍名称，避免读屏只读到一个空标题 */
+  label?: string
   children?: ReactNode
   footer?: ReactNode
   /** 标题栏右侧显示关闭按钮 */
@@ -57,7 +60,7 @@ export const Modal = ({
         className={clsx(styles.content, className)}
         role="dialog"
         aria-modal="true"
-        aria-labelledby={titleId}
+        {...(label ? { 'aria-label': label } : { 'aria-labelledby': titleId })}
       >
         <div className={styles.header}>
           <div id={titleId} className={styles.title}>

@@ -1,21 +1,48 @@
 import clsx from 'clsx'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
 import { useTranslate } from '../../i18n/index.js'
-import { IconPanelLeftOutline16, IconSettingsOutline16, NewChatIcon } from '../base/icons.js'
+import {
+  IconArchiveOutline14,
+  IconHistoryOutline14,
+  IconInfoOutline14,
+  IconMoonOutline14,
+  IconPanelLeftOutline16,
+  IconSettingsOutline16,
+  IconSunOutline14,
+  IconWeekOutline14,
+  NewChatIcon,
+} from '../base/icons.js'
 import { setSiderCollapsed } from '../../services/settings.js'
-import { groupSessions } from '../../services/chat/sessionGroups.js'
+import { groupSessions, type SessionGroupKind } from '../../services/chat/sessionGroups.js'
 import { newChat, removeSession, useChatStore } from '../../services/chat/store.js'
 import type { SessionSummary } from '../../services/chat/types.js'
+import { BrandMark } from '../base/BrandMark.js'
 import { Button } from '../base/Button.js'
 import { IconButton } from '../base/IconButton.js'
 import { Modal } from '../base/Modal.js'
+import { Tooltip } from '../base/Tooltip.js'
 import { showToast } from '../base/toastState.js'
 import { openSettings } from '../settings/settingsDialogState.js'
 import { closeMobileSider, useMobileSider } from './mobileSiderState.js'
 import { SessionItem } from './SessionItem.js'
 import styles from './Sider.module.css'
 
-/** 展开的侧边栏：名称与收起按钮、开启新对话、按时间分组的会话列表、底部设置；移动端放在抽屉里，收起按钮关闭抽屉 */
+/** 时间分组 → 图形。今天的太阳、昨天的月亮、7 天内的日历、30 天内的时钟、更早的归档盒。 */
+const groupIcons: Record<SessionGroupKind, ReactNode> = {
+  today: <IconSunOutline14 />,
+  yesterday: <IconMoonOutline14 />,
+  week: <IconWeekOutline14 />,
+  month: <IconHistoryOutline14 />,
+  archive: <IconArchiveOutline14 />,
+}
+
+/**
+ * 侧边栏不写产品名，也不写按钮文字：
+ * - 顶部用一个轨道标记代替原来的产品名文案；
+ * - 新建对话是左侧的圆形 + 按钮，形状本身就是入口；
+ * - 时间分组用日/月/日历图形分隔，完整文案只在悬停和读屏时出现；
+ * - 底部只留说明与设置两个图标，说明文案改为点击/悬停后出现。
+ */
 export const Sider = ({ mobile = false }: { mobile?: boolean }) => {
   const t = useTranslate()
   const sessions = useChatStore((state) => state.sessions)
@@ -52,7 +79,7 @@ export const Sider = ({ mobile = false }: { mobile?: boolean }) => {
   return (
     <div className={clsx(styles.sider, mobile && styles.mobile)}>
       <div className={styles.top}>
-        <div className={styles.appName}>{t('appName')}</div>
+        <BrandMark size={26} />
         <IconButton
           size="m"
           icon={<IconPanelLeftOutline16 />}
@@ -61,24 +88,35 @@ export const Sider = ({ mobile = false }: { mobile?: boolean }) => {
           onClick={() => (mobile ? closeMobileSider() : setSiderCollapsed(true))}
         />
       </div>
-      <button
-        type="button"
-        className={styles.newChat}
-        onClick={() => {
-          newChat()
-          closeMobileSider()
-        }}
-      >
-        <span className={styles.newChatIcon}>
+      <Tooltip content={t('newChat')} placement="bottom">
+        <button
+          type="button"
+          className={styles.newChat}
+          aria-label={t('newChat')}
+          onClick={() => {
+            newChat()
+            closeMobileSider()
+          }}
+        >
           <NewChatIcon />
-        </span>
-        {t('newChat')}
-      </button>
+        </button>
+      </Tooltip>
       <div className={styles.listWrap}>
         <div className={styles.list}>
           {groups.map((group) => (
             <div key={group.key} className={styles.section}>
-              <div className={styles.sectionHeader}>{group.label}</div>
+              {/* 纯图形分隔：图形表达时间粒度，文字只在 title/读屏中可查，不占版面。 */}
+              <div
+                className={styles.sectionHeader}
+                role="heading"
+                aria-level={2}
+                aria-label={group.label}
+                title={group.label}
+              >
+                <span className={styles.sectionRule} />
+                <span className={styles.sectionIcon}>{groupIcons[group.kind]}</span>
+                <span className={styles.sectionRule} />
+              </div>
               {group.sessions.map((session) => (
                 <SessionItem
                   key={session.id}
@@ -92,12 +130,21 @@ export const Sider = ({ mobile = false }: { mobile?: boolean }) => {
         </div>
       </div>
       <div className={styles.bottom}>
-        <button type="button" className={styles.settings} onClick={() => openSettings('general')}>
-          <span className={styles.settingsIcon}>
-            <IconSettingsOutline16 />
-          </span>
-          <span className={styles.settingsLabel}>{t('settings')}</span>
-        </button>
+        {/* 免责说明不再常驻在页面上：桌面悬停、移动端点击时才出现。 */}
+        <IconButton
+          size={mobile ? 'xl' : 'm'}
+          icon={<IconInfoOutline14 />}
+          tooltip={t('contentCaveat')}
+          tooltipPlacement="top"
+          onClick={() => showToast({ key: 'contentCaveat' })}
+        />
+        <IconButton
+          size={mobile ? 'xl' : 'm'}
+          icon={<IconSettingsOutline16 />}
+          tooltip={t('settings')}
+          tooltipPlacement="top"
+          onClick={() => openSettings('general')}
+        />
       </div>
       {deleting ? (
         <Modal

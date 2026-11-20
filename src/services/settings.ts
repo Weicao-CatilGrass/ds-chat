@@ -19,6 +19,10 @@ type Settings = {
   siderCollapsed: boolean
 }
 
+/**
+ * 存储键沿用最初的标识：它们是浏览器里的数据地址，不参与界面展示。
+ * 品牌文案已全部图形化，改这些键只会让用户的 API Key 和历史设置失联。
+ */
 const KEYS = {
   apiKey: 'chat-demo:api-key',
   locale: 'chat-demo:locale',

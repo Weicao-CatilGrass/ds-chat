@@ -247,34 +247,27 @@
   display: flex;
   flex: 1;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   min-width: 0;
 }
 
-.collapsedToggles .toggleLabel {
-  display: none;
-}
-
+/* 纯图标开关：固定 34px 圆形，和右侧的语音/附件/发送保持同一条视觉基线。 */
 .toggle {
   display: inline-flex;
   flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  box-sizing: border-box;
+  width: 34px;
   height: 34px;
-  padding: 0 12px;
-  border-radius: 18px;
+  padding: 0;
+  border-radius: 50%;
   border: 1px solid var(--dsw-alias-border-l2);
   background-color: transparent;
   color: var(--dsw-alias-label-primary);
-  font: inherit;
-  font-size: 13px;
-  line-height: 20px;
-  font-weight: 500;
-  white-space: nowrap;
   cursor: pointer;
   user-select: none;
-  transition-property: border, background;
+  transition-property: border, background, color;
   transition-duration: 0.2s;
 
   &:hover:not(:disabled) {

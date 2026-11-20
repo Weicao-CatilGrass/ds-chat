@@ -1,5 +1,6 @@
 declare const styles: {
   readonly "dialog": string;
+  readonly "dialogMark": string;
   readonly "dialogMain": string;
   readonly "navigation": string;
   readonly "navItem": string;
@@ -8,8 +9,9 @@ declare const styles: {
   readonly "cell": string;
   readonly "row": string;
   readonly "text": string;
+  readonly "labelRow": string;
   readonly "label": string;
-  readonly "uploadButton": string;
+  readonly "hint": string;
   readonly "locationCell": string;
   readonly "locationSelectors": string;
   readonly "provinceSelect": string;
@@ -23,11 +25,13 @@ declare const styles: {
   readonly "error": string;
   readonly "apiKey": string;
   readonly "apiKeySaved": string;
+  readonly "apiKeyIcon": string;
   readonly "apiKeyInput": string;
   readonly "apiKeyMask": string;
   readonly "divider": string;
-  readonly "confirm": string;
-  readonly "cellButton": string;
+  readonly "confirmIcon": string;
+  readonly "spinner": string;
+  readonly "dangerIcon": string;
   readonly "mobileConfirm": string;
   readonly "importConfirm": string;
   readonly "importConfirmText": string;
@@ -35,4 +39,3 @@ declare const styles: {
   readonly "deleteActions": string;
 };
 export = styles;
-
