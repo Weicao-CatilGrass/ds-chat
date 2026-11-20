@@ -9,3 +9,17 @@ build/
 .env.*
 !.env.example
 tmp/
+
+# Electron / release 产物
+release/
+.electron-data/
+release-meta/
+ds-chat-weicao-*
+
+# Android / Capacitor 生成物
+.gradle/
+android/.gradle/
+android/local.properties
+android/app/src/main/assets/public/
+android/app/src/main/assets/capacitor.config.json
+android/app/src/main/assets/capacitor.plugins.json

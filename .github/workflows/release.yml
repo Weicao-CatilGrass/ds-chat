@@ -1,0 +1,271 @@
+name: Build and Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  # 预热：只做一次公共工作（装依赖、构建 web），把 dist 和 release 元数据作为产物交给后续任务。
+  prewarm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    outputs:
+      short: ${{ steps.meta.outputs.short }}
+      title: ${{ steps.meta.outputs.title }}
+      date: ${{ steps.meta.outputs.date }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build web bundle
+        run: pnpm build
+
+      - name: Collect release metadata
+        id: meta
+        run: node scripts/release-meta.mjs
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: web-dist
+          path: dist
+          retention-days: 3
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-meta
+          path: release-meta
+          retention-days: 3
+
+  windows-build:
+    needs: prewarm
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      CSC_IDENTITY_AUTO_DISCOVERY: 'false'
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      # Electron 与 NSIS 工具跨任务复用；lockfile 变了才重新下载。
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.LOCALAPPDATA }}\electron\Cache
+            ${{ env.LOCALAPPDATA }}\electron-builder\Cache
+          key: electron-win-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: electron-win-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Restore web bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: dist
+
+      - name: Package windows app
+        run: pnpm exec electron-builder --win --x64 --publish never
+
+      - name: Zip unpacked app
+        shell: pwsh
+        run: |
+          if (-not (Test-Path release\win-unpacked)) { throw 'win-unpacked not found' }
+          Rename-Item release\win-unpacked ds-chat-weicao-windows
+          Compress-Archive -Path release\ds-chat-weicao-windows -DestinationPath ds-chat-weicao-windows.zip -Force
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-package
+          path: ds-chat-weicao-windows.zip
+          retention-days: 3
+
+  linux-build:
+    needs: prewarm
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/electron
+            ~/.cache/electron-builder
+          key: electron-linux-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: electron-linux-
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Restore web bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: dist
+
+      - name: Package linux binary
+        run: pnpm exec electron-builder --linux --x64 --publish never
+
+      - name: Archive linux binary
+        run: |
+          mv release/linux-unpacked release/ds-chat-weicao-linux
+          tar -czf ds-chat-weicao-linux.tar.gz -C release ds-chat-weicao-linux
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: linux-package
+          path: ds-chat-weicao-linux.tar.gz
+          retention-days: 3
+
+  android-build:
+    needs: prewarm
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      # 只缓存 compileSdk 需要的两个目录，避免每次重新下载 platform 36 / build-tools 36。
+      - uses: actions/cache@v4
+        with:
+          path: |
+            /usr/local/lib/android/sdk/platforms/android-36
+            /usr/local/lib/android/sdk/build-tools/36.0.0
+          key: android-sdk-36-${{ hashFiles('android/variables.gradle') }}
+
+      # Capacitor 8 使用 compileSdk / targetSdk 36。
+      - uses: android-actions/setup-android@v4
+        with:
+          packages: 'platforms;android-36 build-tools;36.0.0 platform-tools'
+          accept-android-sdk-licenses: true
+
+      # Gradle 依赖、wrapper 和构建缓存都走 setup-gradle 自己的缓存。
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Restore web bundle
+        uses: actions/download-artifact@v4
+        with:
+          name: web-dist
+          path: dist
+
+      - name: Sync Capacitor
+        run: pnpm exec cap sync android
+
+      - name: Make Gradle wrapper executable
+        run: chmod +x android/gradlew
+
+      - name: Build debug APK
+        working-directory: android
+        run: ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - name: Name APK
+        run: cp android/app/build/outputs/apk/debug/app-debug.apk ds-chat-weicao-android.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: android-package
+          path: ds-chat-weicao-android.apk
+          retention-days: 3
+
+  release:
+    needs: [prewarm, windows-build, linux-build, android-build]
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: windows-package
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: linux-package
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: android-package
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: release-meta
+          path: release-meta
+
+      - name: Read release metadata
+        id: meta
+        run: |
+          node -e "const m=require('./release-meta/meta.json'); console.log('short='+m.short); console.log('title='+m.title); console.log('date='+m.date)" >> "$GITHUB_OUTPUT"
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.meta.outputs.short }}
+          target_commitish: ${{ github.sha }}
+          name: ${{ steps.meta.outputs.title }}
+          body_path: release-meta/body.md
+          files: |
+            ds-chat-weicao-android.apk
+            ds-chat-weicao-windows.zip
+            ds-chat-weicao-linux.tar.gz
+          fail_on_unmatched_files: true
+          overwrite_files: true
+          make_latest: true

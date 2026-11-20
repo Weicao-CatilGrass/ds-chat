@@ -1,0 +1,37 @@
+appId: app.dschat
+productName: DeepSeek
+copyright: MIT
+
+directories:
+  output: release
+  buildResources: resources
+
+# 渲染层已由 rspack 打包，运行时只带 dist/ 和 Electron 入口，避免把 node_modules 塞进安装包。
+files:
+  - dist/**
+  - electron/**
+  - package.json
+  - '!node_modules/**'
+
+asar: true
+# normal 已足够小；maximum 会让 200MB 的 Electron 运行时多花十几分钟。
+compression: normal
+npmRebuild: false
+
+win:
+  icon: resources/icon.ico
+  target:
+    - target: dir
+      arch:
+        - x64
+
+linux:
+  icon: resources/icon.png
+  executableName: ds-chat
+  category: Network
+  target:
+    - target: dir
+      arch:
+        - x64
+
+publish: null
